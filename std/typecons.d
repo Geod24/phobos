@@ -1105,6 +1105,10 @@ template Rebindable(T) if (is(T == class) || is(T == interface) || isDynamicArra
                 T original;
                 U stripped;
             }
+            void opAssign(typeof(null) another) @trusted pure nothrow
+            {
+                stripped = null;
+            }
             void opAssign(T another) @trusted pure nothrow
             {
                 stripped = cast(U) another;
