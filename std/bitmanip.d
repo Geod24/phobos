@@ -45,12 +45,12 @@ private template createAccessors(
     static if (!name.length)
     {
         // No need to create any accessor
-        enum result = "";
+        enum createAccessors = "";
     }
     else static if (len == 0)
     {
         // Fields of length 0 are always zero
-        enum result = "enum "~T.stringof~" "~name~" = 0;\n";
+        enum createAccessors = "enum "~T.stringof~" "~name~" = 0;\n";
     }
     else
     {
@@ -75,7 +75,7 @@ private template createAccessors(
         static if (is(T == bool))
         {
             static assert(len == 1);
-            enum result =
+            enum createAccessors =
             // getter
                 "@property bool " ~ name ~ "() @safe pure nothrow @nogc const { return "
                 ~"("~store~" & "~myToString(maskAllElse)~") != 0;}\n"
@@ -87,7 +87,7 @@ private template createAccessors(
         else
         {
             // getter
-            enum result = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const { auto result = "
+            enum createAccessors = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const { auto result = "
                 ~"("~store~" & "
                 ~ myToString(maskAllElse) ~ ") >>"
                 ~ myToString(offset) ~ ";"
@@ -138,13 +138,13 @@ private template createFields(string store, size_t offset, Ts...)
             static assert(false, "Field widths must sum to 8, 16, 32, or 64");
             alias StoreType = ulong; // just to avoid another error msg
         }
-        enum result = "private " ~ StoreType.stringof ~ " " ~ store ~ ";";
+        enum createFields = "private " ~ StoreType.stringof ~ " " ~ store ~ ";";
     }
     else
     {
-        enum result
-            = createAccessors!(store, Ts[0], Ts[1], Ts[2], offset).result
-            ~ createFields!(store, offset + Ts[2], Ts[3 .. $]).result;
+        enum createFields
+            = createAccessors!(store, Ts[0], Ts[1], Ts[2], offset)
+            ~ createFields!(store, offset + Ts[2], Ts[3 .. $]);
     }
 }
 
@@ -197,7 +197,7 @@ bool), followed by unsigned types, followed by signed types.
 
 template bitfields(T...)
 {
-    enum { bitfields = createFields!(createStoreName!(T), 0, T).result }
+    enum bitfields = createFields!(createStoreName!(T), 0, T);
 }
 
 @safe pure nothrow @nogc
