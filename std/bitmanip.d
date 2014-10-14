@@ -7,20 +7,14 @@ Macros:
 
 WIKI = StdBitarray
 
-Copyright: Copyright Digital Mars 2007 - 2011.
-License:   <a href="http://www.boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
+Copyright: Copyright Digital Mars 2007 - 2014.
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   $(WEB digitalmars.com, Walter Bright),
            $(WEB erdani.org, Andrei Alexandrescu),
            Jonathan M Davis,
            Alex Rønne Petersen,
            Damian Ziemba
 Source: $(PHOBOSSRC std/_bitmanip.d)
-*/
-/*
-         Copyright Digital Mars 2007 - 2012.
-Distributed under the Boost Software License, Version 1.0.
-   (See accompanying file LICENSE_1_0.txt or copy at
-         http://www.boost.org/LICENSE_1_0.txt)
 */
 module std.bitmanip;
 
@@ -39,19 +33,10 @@ version(unittest)
     import std.typetuple;
 }
 
-
-private string myToStringx(ulong n)
-{
-    enum s = "0123456789";
-    if (n < 10)
-        return s[cast(size_t)n..cast(size_t)n+1];
-    else
-        return myToStringx(n / 10) ~ myToStringx(n % 10);
-}
-
 private string myToString(ulong n)
 {
-    return myToStringx(n) ~ (n > uint.max ? "UL" : "U");
+    import std.conv : to;
+    return to!string(n) ~ (n > uint.max ? "UL" : "U");
 }
 
 private template createAccessors(
