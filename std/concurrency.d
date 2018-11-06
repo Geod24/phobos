@@ -850,6 +850,26 @@ do
     assert(result == "Unexpected message type: expected 'string', got 'int'");
 }
 
+@system unittest
+{
+    static struct Aggregate { const int a; const int[5] b; }
+    static void t1(Tid mainTid)
+    {
+        const sendMe = Aggregate(42, [1, 2, 3, 4, 5]);
+        mainTid.send(sendMe);
+        mainTid.send(0, sendMe);
+    }
+
+    auto tid = spawn(&t1, thisTid);
+    tid.send(1);
+    auto result = receiveOnly!Aggregate();
+    immutable expected = Aggregate(42, [1, 2, 3, 4, 5]);
+    assert(result == expected);
+
+    auto tupleResult = receiveOnly!(int, Aggregate)();
+    assert(result == Tuple!(0, expected));
+}
+
 /**
  * Tries to receive but will give up if no matches arrive within duration.
  * Won't wait at all if provided $(REF Duration, core,time) is negative.
