@@ -273,94 +273,90 @@ struct RBNode(V)
     void setColor(Node end)
     {
         // test against the marker node
-        if (_parent !is end)
+        if (_parent is end)
         {
-            if (_parent.color == Color.Red)
+            // this is the root node, color it black
+            color = Color.Black;
+            return;
+        }
+
+        if (_parent.color != Color.Red)
+            return;
+
+        Node cur = &this;
+        while (true)
+        {
+            // because root is always black, _parent._parent always exists
+            if (cur._parent.isLeftNode)
             {
-                Node cur = &this;
-                while (true)
+                // parent is left node, y is 'uncle', could be null
+                Node y = cur._parent._parent._right;
+                if (y !is null && y.color == Color.Red)
                 {
-                    // because root is always black, _parent._parent always exists
-                    if (cur._parent.isLeftNode)
+                    cur._parent.color = Color.Black;
+                    y.color = Color.Black;
+                    cur = cur._parent._parent;
+                    if (cur._parent is end)
                     {
-                        // parent is left node, y is 'uncle', could be null
-                        Node y = cur._parent._parent._right;
-                        if (y !is null && y.color == Color.Red)
-                        {
-                            cur._parent.color = Color.Black;
-                            y.color = Color.Black;
-                            cur = cur._parent._parent;
-                            if (cur._parent is end)
-                            {
-                                // root node
-                                cur.color = Color.Black;
-                                break;
-                            }
-                            else
-                            {
-                                // not root node
-                                cur.color = Color.Red;
-                                if (cur._parent.color == Color.Black)
-                                    // satisfied, exit the loop
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            if (!cur.isLeftNode)
-                                cur = cur._parent.rotateL();
-                            cur._parent.color = Color.Black;
-                            cur = cur._parent._parent.rotateR();
-                            cur.color = Color.Red;
-                            // tree should be satisfied now
-                            break;
-                        }
+                        // root node
+                        cur.color = Color.Black;
+                        break;
                     }
                     else
                     {
-                        // parent is right node, y is 'uncle'
-                        Node y = cur._parent._parent._left;
-                        if (y !is null && y.color == Color.Red)
-                        {
-                            cur._parent.color = Color.Black;
-                            y.color = Color.Black;
-                            cur = cur._parent._parent;
-                            if (cur._parent is end)
-                            {
-                                // root node
-                                cur.color = Color.Black;
-                                break;
-                            }
-                            else
-                            {
-                                // not root node
-                                cur.color = Color.Red;
-                                if (cur._parent.color == Color.Black)
-                                    // satisfied, exit the loop
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            if (cur.isLeftNode)
-                                cur = cur._parent.rotateR();
-                            cur._parent.color = Color.Black;
-                            cur = cur._parent._parent.rotateL();
-                            cur.color = Color.Red;
-                            // tree should be satisfied now
+                        // not root node
+                        cur.color = Color.Red;
+                        if (cur._parent.color == Color.Black)
+                            // satisfied, exit the loop
                             break;
-                        }
                     }
                 }
-
+                else
+                {
+                    if (!cur.isLeftNode)
+                        cur = cur._parent.rotateL();
+                    cur._parent.color = Color.Black;
+                    cur = cur._parent._parent.rotateR();
+                    cur.color = Color.Red;
+                    // tree should be satisfied now
+                    break;
+                }
             }
-        }
-        else
-        {
-            //
-            // this is the root node, color it black
-            //
-            color = Color.Black;
+            else
+            {
+                // parent is right node, y is 'uncle'
+                Node y = cur._parent._parent._left;
+                if (y !is null && y.color == Color.Red)
+                {
+                    cur._parent.color = Color.Black;
+                    y.color = Color.Black;
+                    cur = cur._parent._parent;
+                    if (cur._parent is end)
+                    {
+                        // root node
+                        cur.color = Color.Black;
+                        break;
+                    }
+                    else
+                    {
+                        // not root node
+                        cur.color = Color.Red;
+                        if (cur._parent.color == Color.Black)
+                            // satisfied, exit the loop
+                            break;
+                    }
+                }
+                else
+                {
+                    if (cur.isLeftNode)
+                        cur = cur._parent.rotateR();
+                    cur._parent.color = Color.Black;
+                    cur = cur._parent._parent.rotateL();
+                    cur.color = Color.Red;
+                    // tree should be satisfied now
+                    break;
+                }
+            }
         }
     }
 
