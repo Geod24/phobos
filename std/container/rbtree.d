@@ -718,9 +718,8 @@ private struct RBRange(N)
  * of $(BIGOH lg(n)).
  *
  * To use a different comparison than $(D "a < b"), pass a different operator string
- * that can be used by $(REF binaryFun, std,functional), or pass in a
- * function, delegate, functor, or any type where $(D less(a, b)) results in a `bool`
- * value.
+ * that can be used by $(REF binaryFun, std,functional), or pass in a callable
+ * where $(D less(a, b)) results in a `bool` value.
  *
  * Note that less should produce a strict ordering.  That is, for two unequal
  * elements `a` and `b`, $(D less(a, b) == !less(b, a)). $(D less(a, a)) should
@@ -730,6 +729,11 @@ private struct RBRange(N)
  * once continues to add more elements.  If it is `false`, duplicate elements are
  * ignored on insertion.  If duplicates are allowed, then new elements are
  * inserted after all existing duplicate elements.
+ *
+ * Operations cannot be performed on the container directly, only on a range.
+ * That is, $(D std.algorithm.searching.canFind(rbtree, someValue)) will not
+ * compile. Use one of the range-returning function instead
+ * (`opSlice`, `lowerBound`, `upperBound`).
  */
 final class RedBlackTree(T, alias less = "a < b", bool allowDuplicates = false)
 if (is(typeof(binaryFun!less(T.init, T.init))))
