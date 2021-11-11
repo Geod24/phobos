@@ -275,7 +275,7 @@ same cost or side effects.
 
 private struct _Cache(R, bool bidir)
 {
-    import core.exception : RangeError;
+    import core.exception : onRangeError;
 
     private
     {
@@ -332,18 +332,18 @@ private struct _Cache(R, bool bidir)
 
     E front() @property
     {
-        version (assert) if (empty) throw new RangeError();
+        version (assert) if (empty) onRangeError();
         return caches[0];
     }
     static if (bidir) E back() @property
     {
-        version (assert) if (empty) throw new RangeError();
+        version (assert) if (empty) onRangeError();
         return caches[1];
     }
 
     void popFront()
     {
-        version (assert) if (empty) throw new RangeError();
+        version (assert) if (empty) onRangeError();
         source.popFront();
         if (!source.empty)
             caches[0] = source.front;
@@ -357,7 +357,7 @@ private struct _Cache(R, bool bidir)
     }
     static if (bidir) void popBack()
     {
-        version (assert) if (empty) throw new RangeError();
+        version (assert) if (empty) onRangeError();
         source.popBack();
         if (!source.empty)
             caches[1] = source.back;
@@ -5817,6 +5817,16 @@ if (is(typeof(binaryFun!pred(r.front, s)) : bool)
     assert("abXcdxef".splitter!((a, b) => a.toLower == b)('x').equal(["ab", "cd", "ef"]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=12768
+@safe nothrow @nogc pure unittest
+{
+    import std.utf : byChar;
+    import std.algorithm.comparison : equal;
+    // Use dstring to avoid autodecoding which is not `nothrow @nogc` itself
+    dstring[3] cmp = [ "splitter"d, "dlang"d, "org"d ];
+    assert("splitter.dlang.org"d.splitter('.').equal(cmp[]));
+}
+
 /// ditto
 auto splitter(alias pred = "a == b",
               Flag!"keepSeparators" keepSeparators = No.keepSeparators,
@@ -6055,6 +6065,7 @@ if (isForwardRange!Range && is(typeof(unaryFun!isTerminator(r.front))))
 private struct SplitterResult(alias isTerminator, Range)
 {
     import std.algorithm.searching : find;
+    version (assert) import core.exception : onRangeError;
     enum fullSlicing = (hasLength!Range && hasSlicing!Range) || isSomeString!Range;
 
     private Range _input;
@@ -6124,9 +6135,8 @@ private struct SplitterResult(alias isTerminator, Range)
     {
         version (assert)
         {
-            import core.exception : RangeError;
             if (empty)
-                throw new RangeError();
+                onRangeError();
         }
         static if (fullSlicing)
             return _input[0 .. _end];
@@ -6141,9 +6151,8 @@ private struct SplitterResult(alias isTerminator, Range)
     {
         version (assert)
         {
-            import core.exception : RangeError;
             if (empty)
-                throw new RangeError();
+                onRangeError();
         }
 
         static if (fullSlicing)
@@ -6309,7 +6318,7 @@ if (isSomeString!Range ||
     static struct Result
     {
     private:
-        import core.exception : RangeError;
+        import core.exception : onRangeError;
         Range _s;
         size_t _frontLength;
 
@@ -6387,14 +6396,14 @@ if (isSomeString!Range ||
 
         @property auto front()
         {
-            version (assert) if (empty) throw new RangeError();
+            version (assert) if (empty) onRangeError();
             return _s[0 .. _frontLength];
         }
 
         void popFront()
         {
             import std.string : stripLeft;
-            version (assert) if (empty) throw new RangeError();
+            version (assert) if (empty) onRangeError();
             _s = _s[_frontLength .. $].stripLeft();
             getFirst();
         }
